@@ -1,4 +1,4 @@
-﻿using JewelryMarket.Models;
+﻿using JewelryMarket.enums;
 
 namespace JewelryMarket.Entities
 {

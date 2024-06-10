@@ -48,7 +48,7 @@ public class UserService : IUserService
             return "Wrong Password!";
         }
 
-        return CreateToken(user);
+        return await CreateToken(user);
     }
 
     public async Task<int> AddUserAsync(UserDto request)
@@ -74,24 +74,6 @@ public class UserService : IUserService
 
         return userId;
     }
-
-    //public async Task UpdateUserAsync(User user, UserDto request)
-    //{
-    //    CreateHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-    //    user.UserName = request.UserName;
-    //    user.Email = request.Email;
-    //    user.Address = request.Address;
-    //    user.PhoneNumber = request.PhoneNumber;
-    //    user.PersonalId = request.PersonalId;
-    //    user.FirstName = request.FirstName;
-    //    user.LastName = request.LastName;
-    //    user.PasswordHash = passwordHash;
-    //    user.PasswordSalt = passwordSalt;
-    //    user.UpdatedAt = DateTime.UtcNow;
-
-    //    await _userRepository.UpdateUserAsync(user);
-    //}
 
     public async Task UpdateUserAsync(User user, UpdateUserDto request)
 {
@@ -151,7 +133,7 @@ public class UserService : IUserService
         }
     }
 
-    private string CreateToken(User user)
+    public async Task<string> CreateToken(User user)
     {
         var claims = new List<Claim>
         {
@@ -172,7 +154,37 @@ public class UserService : IUserService
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return tokenHandler.WriteToken(token);
+        return await Task.FromResult(tokenHandler.WriteToken(token));
+    }
+
+    public async Task<string> CreateRefreshToken(User user)
+    {
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        user.RefreshToken = refreshToken;
+        user.TokenCreatedAt = DateTime.Now;
+        user.TokenUpdatedAt = DateTime.Now.AddMinutes(10); // Refresh token valid for 1 minute
+
+        await _userRepository.UpdateUserAsync(user);
+
+        return refreshToken;
+    }
+
+    public async Task<bool> ValidateRefreshToken(User user, string refreshToken)
+    {
+        if (user.RefreshToken != refreshToken || user.TokenUpdatedAt < DateTime.Now)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task RevokeRefreshToken(User user)
+    {
+        user.RefreshToken = null;
+        user.TokenCreatedAt = null;
+        user.TokenUpdatedAt = null;
+        await _userRepository.UpdateUserAsync(user);
     }
 
     private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
@@ -183,5 +195,4 @@ public class UserService : IUserService
             return hash.SequenceEqual(passwordHash);
         }
     }
-
 }

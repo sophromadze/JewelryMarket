@@ -1,4 +1,4 @@
-﻿namespace JewelryMarket.Models
+﻿namespace JewelryMarket.enums
 {
     public enum JewelryCategory
     {

@@ -25,17 +25,22 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> Login(LoginModel request)
+    public async Task<ActionResult<object>> Login(LoginModel request)
     {
-        var token = await _userService.LoginAsync(request);
+        var user = await _userService.GetUserByUsernameOrEmailAsync(request.UserName);
+        if (user == null)
+        {
+            return Unauthorized("User not found");
+        }
 
+        var token = await _userService.LoginAsync(request);
         if (token == "User not found" || token == "Wrong Password!")
         {
             return Unauthorized(token);
         }
 
-        var user = await _userService.GetUserByUsernameOrEmailAsync(request.UserName);
-        return Ok(new { token, username = user.UserName, role = user.Role.ToString() });
+        var refreshToken = await _userService.CreateRefreshToken(user);
+        return Ok(new { token, refreshToken, username = user.UserName, role = user.Role.ToString() });
     }
 
     [HttpGet("username/{username}"), Authorize]
@@ -174,5 +179,39 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<object>> RefreshToken([FromBody] RefreshTokenModel request)
+    {
+        var user = await _userService.GetUserByUsernameOrEmailAsync(request.Username);
+        if (user == null)
+        {
+            return Unauthorized("Invalid refresh token");
+        }
 
+        var isValid = await _userService.ValidateRefreshToken(user, request.RefreshToken);
+        if (!isValid)
+        {
+            return Unauthorized("Invalid or expired refresh token");
+        }
+
+        var newToken = await _userService.CreateToken(user);
+        var newRefreshToken = await _userService.CreateRefreshToken(user);
+
+        return Ok(new { token = newToken, refreshToken = newRefreshToken });
+    }
+
+    [HttpPost("revoke-token"), Authorize]
+    public async Task<IActionResult> RevokeToken()
+    {
+        var username = User.Identity.Name;
+        var user = await _userService.GetUserByUsernameOrEmailAsync(username);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        await _userService.RevokeRefreshToken(user);
+        return NoContent();
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace JewelryMarket.Models
+﻿using JewelryMarket.enums;
+
+namespace JewelryMarket.Models
 {
     public class UserRoleDto
     {

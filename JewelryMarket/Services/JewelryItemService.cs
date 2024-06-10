@@ -13,13 +13,14 @@ public class JewelryItemService : IJewelryItemService
         _itemRepository = itemRepository;
     }
 
-    public async Task<JewelryItem> AddItemAsync(JWItemDto request)
+    public async Task<JewelryItem> AddItemAsync(JewelryItem request)
     {
         var item = new JewelryItem
         {
             ItemName = request.ItemName,
             Price = request.Price,
-            Category = request.Category
+            Category = request.Category,
+            Quantity  = request.Quantity
         };
 
         var result = await _itemRepository.AddItemAsync(item);
@@ -31,11 +32,12 @@ public class JewelryItemService : IJewelryItemService
         await _itemRepository.DeleteItemAsync(item);
     }
 
-    public async Task UpdateItemAsync(JewelryItem item, JWItemDto request)
+    public async Task UpdateItemAsync(JewelryItem item, JewelryItem request)
     {
         item.ItemName = request.ItemName;
         item.Price = request.Price;
         item.Category = request.Category;
+        item.Quantity = request.Quantity;
         item.UpdatedAt = DateTime.Now;
 
         await _itemRepository.UpdateItemAsync(item);

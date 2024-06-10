@@ -1,4 +1,4 @@
-﻿using JewelryMarket.Models;
+﻿using JewelryMarket.enums;
 
 namespace JewelryMarket.Entities
 {
@@ -7,5 +7,6 @@ namespace JewelryMarket.Entities
         public string ItemName { get; set; }
         public decimal Price { get; set; }
         public JewelryCategory Category { get; set; }
+        public int Quantity { get; set; }
     }
 }

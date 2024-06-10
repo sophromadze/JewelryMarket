@@ -1,6 +1,5 @@
 ﻿using JewelryMarket.Entities;
 using JewelryMarket.Interfaces;
-using JewelryMarket.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,7 +39,7 @@ public class JewelryItemsController : ControllerBase
     }
 
     [HttpPost("additem"), Authorize(Roles = "Admin")]
-    public async Task<ActionResult<JewelryItem>> AddItem(JWItemDto request)
+    public async Task<ActionResult<JewelryItem>> AddItem(JewelryItem request)
     {
         var result = await _jewelryItemService.AddItemAsync(request);
 
@@ -48,7 +47,7 @@ public class JewelryItemsController : ControllerBase
     }
 
     [HttpPut("{id}"), Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateItem(int id, JWItemDto request)
+    public async Task<IActionResult> UpdateItem(int id, JewelryItem request)
     {
         // check if item exists
         var item = await _jewelryItemService.GetItemByIdAsync(id);
