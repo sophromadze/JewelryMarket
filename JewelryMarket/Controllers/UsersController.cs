@@ -82,21 +82,6 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    //[HttpPut("{id}"), Authorize(Roles = "Admin")]
-    //public async Task<IActionResult> UpdateUser(int id, UserDto request)
-    //{
-    //    //check if user exists 
-    //    var user = await _userService.GetUserByIdAsync(id);
-    //    if (user == null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    await _userService.UpdateUserAsync(user, request);
-
-    //    return NoContent();
-    //}
-
     [HttpPut("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateUser(int id, UpdateUserDto request)
     {
